@@ -68,6 +68,9 @@ class CarInterfaceBase():
     ret.brakeMaxV = [1.]
     ret.openpilotLongitudinalControl = False
     ret.startAccel = 0.0
+    ret.minSpeedCan = 0.3
+    ret.stoppingBrakeRate = 0.2 # brake_travel/s while trying to stop
+    ret.startingBrakeRate = 0.8 # brake_travel/s while releasing on restart
     ret.stoppingControl = False
     ret.longitudinalTuning.deadzoneBP = [0.]
     ret.longitudinalTuning.deadzoneV = [0.]
@@ -145,6 +148,7 @@ class RadarInterfaceBase():
       time.sleep(self.radar_ts)  # radard runs on RI updates
     return ret
 
+
 class CarStateBase:
   def __init__(self, CP):
     self.CP = CP
@@ -175,10 +179,13 @@ class CarStateBase:
     return self.left_blinker_cnt > 0, self.right_blinker_cnt > 0
 
   @staticmethod
-  def parse_gear_shifter(gear):
-    return {'P': GearShifter.park, 'R': GearShifter.reverse, 'N': GearShifter.neutral,
-            'E': GearShifter.eco, 'T': GearShifter.manumatic, 'D': GearShifter.drive,
-            'S': GearShifter.sport, 'L': GearShifter.low, 'B': GearShifter.brake}.get(gear, GearShifter.unknown)
+  def parse_gear_shifter(gear: str) -> car.CarState.GearShifter:
+    d: Dict[str, car.CarState.GearShifter] = {
+        'P': GearShifter.park, 'R': GearShifter.reverse, 'N': GearShifter.neutral,
+        'E': GearShifter.eco, 'T': GearShifter.manumatic, 'D': GearShifter.drive,
+        'S': GearShifter.sport, 'L': GearShifter.low, 'B': GearShifter.brake
+    }
+    return d.get(gear, GearShifter.unknown)
 
   @staticmethod
   def get_cam_can_parser(CP):

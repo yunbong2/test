@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
   float brightness_b = 0, brightness_m = 0;
   int result = read_param(&brightness_b, "BRIGHTNESS_B", true);
   result += read_param(&brightness_m, "BRIGHTNESS_M", true);
-  if(result != 0) {
+  if (result != 0) {
     brightness_b = LEON ? 10.0 : 5.0;
     brightness_m = LEON ? 2.6 : 1.3;
     write_param_float(brightness_b, "BRIGHTNESS_B", true);
@@ -158,14 +158,15 @@ int main(int argc, char* argv[]) {
     // poll for touch events
     int touch_x = -1, touch_y = -1;
     int touched = touch_poll(&touch, &touch_x, &touch_y, 0);
-	
-#if UI_FEATURE_DASHCAM
+
     if(s->awake)
     {
+#if UI_FEATURE_DASHCAM
         if(dashcam(s, touch_x, touch_y))
             touched = 0;
-    }
 #endif
+    }
+
     if (touched == 1) {
       handle_sidebar_touch(s, touch_x, touch_y);
       handle_vision_touch(s, touch_x, touch_y);

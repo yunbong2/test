@@ -8,8 +8,7 @@ from selfdrive.car import apply_std_steer_torque_limits
 from selfdrive.car.hyundai.hyundaican import create_lkas11, create_clu11, create_lfa_mfa, \
   create_scc11, create_scc12, create_scc13, create_scc14, \
   create_mdps12, create_spas11, create_spas12, create_ems11
-from selfdrive.car.hyundai.scc_smoother import SccSmoother, WAIT_COUNT_MIN, WAIT_COUNT_MAX, \
-  ALIVE_COUNT_MIN, ALIVE_COUNT_MAX
+from selfdrive.car.hyundai.scc_smoother import SccSmoother
 from selfdrive.car.hyundai.values import Buttons, SteerLimitParams, CAR, FEATURES
 from opendbc.can.packer import CANPacker
 from selfdrive.config import Conversions as CV
@@ -94,15 +93,12 @@ class CarController():
     self.scc_smoother = SccSmoother(accel_gain=1.0, decel_gain=1.0, curvature_gain=0.8)
 
   def update(self, enabled, CS, frame, CC, actuators, pcm_cancel_cmd, visual_alert,
-             left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible, sm):
+             left_lane, right_lane, left_lane_depart, right_lane_depart, set_speed, lead_visible, controls):
 
     # *** compute control surfaces ***
 
     # gas and brake
     apply_accel = actuators.gas - actuators.brake
-
-    aa = apply_accel
-
     apply_accel, self.accel_steady = accel_hysteresis(apply_accel, self.accel_steady)
     apply_accel = clip(apply_accel * ACCEL_SCALE, ACCEL_MIN, ACCEL_MAX)
 
@@ -217,9 +213,9 @@ class CarController():
         can_sends.append(create_clu11(self.packer, self.resume_cnt, CS.scc_bus, CS.clu11, Buttons.RES_ACCEL, clu11_speed))
         self.resume_cnt += 1
 
-        if self.resume_cnt >= ALIVE_COUNT_MIN:
+        if self.resume_cnt >= 8:
           self.resume_cnt = 0
-          self.resume_wait_timer = randint(WAIT_COUNT_MIN, WAIT_COUNT_MAX)
+          self.resume_wait_timer = SccSmoother.get_wait_count()
 
     # reset lead distnce after the car starts moving
     elif self.last_lead_distance != 0:
@@ -227,7 +223,7 @@ class CarController():
 
     # scc smoother
     if not self.longcontrol:
-      self.scc_smoother.update(enabled, can_sends, self.packer, CC, CS, frame, apply_accel, sm)
+      self.scc_smoother.update(enabled, can_sends, self.packer, CC, CS, frame, apply_accel, controls)
 
     if CS.mdps_bus:  # send mdps12 to LKAS to prevent LKAS error
       can_sends.append(create_mdps12(self.packer, frame, CS.mdps12))

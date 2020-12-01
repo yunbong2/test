@@ -4,7 +4,7 @@ import signal
 import json
 import time
 
-LIMIT_PATH = '/data/data/com.neokii.oproadlimit/'
+LIMIT_PATH = '/data/data/com.neokii.oproadlimit/files/'
 LIMIT_FILE = '/data/data/com.neokii.oproadlimit/files/oproadlimit.json'
 
 current_milli_time = lambda: int(round(time.time() * 1000))
@@ -26,7 +26,6 @@ class RoadSpeedLimiter:
       fcntl.fcntl(fd, fcntl.F_SETSIG, 0)
       fcntl.fcntl(fd, fcntl.F_NOTIFY, fcntl.DN_MODIFY | fcntl.DN_CREATE | fcntl.DN_MULTISHOT)
     except Exception as ex:
-      print("exception", ex)
       pass
 
   def handler(self, signum, frame):
@@ -37,50 +36,65 @@ class RoadSpeedLimiter:
           self.json = json.load(f)
           self.last_updated = current_milli_time()
 
-          print(self.json)
-
     except Exception as ex:
-      print("exception", ex)
       pass
+
+  def get_val(self, key):
+    if key in self.json:
+      return self.json[key]
+    return None
 
   def get_max_speed(self, CS, v_cruise_kph):
 
-    if current_milli_time() - self.last_updated > 1000 * 20:  # 최종 업데이트 시간이 20초가 지났으면 유효하지 않음
-      return v_cruise_kph
+    if current_milli_time() - self.last_updated > 1000 * 20:
+      return 0, 0, 0
 
     try:
 
-      #car_speed_kph = CS.vEgo * CV.MS_TO_KPH
+      # car_speed_kph = CS.vEgo * 3.6
 
-      cam_limit_speed_left_dist = self.json['cam_limit_speed_left_dist']
-      cam_limit_speed = self.json['cam_limit_speed']
+      road_limit_speed = self.get_val('road_limit_speed')
+      is_highway = self.get_val('is_highway')
 
-      section_limit_speed = self.json['section_limit_speed']
-      # section_avg_speed = self.json['section_avg_speed']
-      section_left_dist = self.json['section_left_dist']
-      # section_left_time = self.json['section_left_time']
+      cam_limit_speed_left_dist = self.get_val('cam_limit_speed_left_dist')
+      cam_limit_speed = self.get_val('cam_limit_speed')
 
-      # 과속카메라 남은 거리가 0보다 크고 제한속도가 50 ~ 130 이면
-      if cam_limit_speed_left_dist is not None and cam_limit_speed is not None \
-          and cam_limit_speed_left_dist > 0 and 50 <= cam_limit_speed <= 130:
+      section_limit_speed = self.get_val('section_limit_speed')
+      # section_avg_speed = self.get_val('section_avg_speed')
+      section_left_dist = self.get_val('section_left_dist')
+      # section_left_time = self.get_val('section_left_time')
 
-        # 제한속도로 10초후의 거리보다 남은 거리가 작으면, 100km/h 일 경우 약 278미터
-        if cam_limit_speed_left_dist < cam_limit_speed * 15:
-          return min(v_cruise_kph, cam_limit_speed)
+      if is_highway is not None:
+        if is_highway:
+          MIN_LIMIT = 60
+          MAX_LIMIT = 120
+        else:
+          MIN_LIMIT = 30
+          MAX_LIMIT = 100
+      else:
+        MIN_LIMIT = 30
+        MAX_LIMIT = 120
 
-      # 구간단속중이면
-      elif section_left_dist is not None and section_limit_speed is not None and \
-          section_left_dist > 0:
+      if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
+        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and cam_limit_speed_left_dist < (cam_limit_speed / 3.6) * 13:
+          return cam_limit_speed, cam_limit_speed, cam_limit_speed_left_dist
 
-        return min(v_cruise_kph, section_limit_speed)
+        return 0, cam_limit_speed, cam_limit_speed_left_dist
+
+      elif section_left_dist is not None and section_limit_speed is not None and section_left_dist > 0:
+        if MIN_LIMIT <= section_limit_speed <= MAX_LIMIT:
+          return section_limit_speed, section_limit_speed, section_left_dist
+
+        return 0, section_limit_speed, section_left_dist
 
     except:
       pass
 
-    return v_cruise_kph
+    return 0, 0, 0
 
 
 road_speed_limiter = None
+
 
 def road_speed_limiter_get_max_speed(CS, v_cruise_kph):
   global road_speed_limiter

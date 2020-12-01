@@ -267,10 +267,10 @@ static void screen_draw_button(UIState *s, int touch_x, int touch_y) {
 
     int btn_w = 150;
     int btn_h = 150;
-    int btn_x = 1920 - btn_w;
-    int btn_y = 1080 - btn_h;
+    int btn_x = 1920 - btn_w - 110;
+    int btn_y = 1080 - btn_h - 45;
     nvgBeginPath(s->vg);
-      nvgRoundedRect(s->vg, btn_x-110, btn_y-45, btn_w, btn_h, 100);
+      nvgRoundedRect(s->vg, btn_x, btn_y, btn_w, btn_h, 100);
       nvgStrokeColor(s->vg, nvgRGBA(255,255,255,80));
       nvgStrokeWidth(s->vg, 6);
       nvgStroke(s->vg);
@@ -286,7 +286,8 @@ static void screen_draw_button(UIState *s, int touch_x, int touch_y) {
       else {
         nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 200));
       }
-      nvgText(s->vg,btn_x-50,btn_y+40,"REC",NULL);
+      nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+      nvgText(s->vg, btn_x+btn_w/2, btn_y+btn_h/2, "REC", NULL);
   }
 
   if (captureState == CAPTURE_STATE_CAPTURING) {

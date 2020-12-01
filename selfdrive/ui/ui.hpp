@@ -31,7 +31,6 @@
 #define nvgCreate nvgCreateGL3
 #else
 #include <GLES3/gl3.h>
-#include <EGL/egl.h>
 #define NANOVG_GLES3_IMPLEMENTATION
 #define nvgCreate nvgCreateGLES3
 #endif
@@ -155,7 +154,7 @@ typedef struct UIScene {
   cereal::CarState::Reader car_state;
   cereal::CarControl::Reader car_control;
   cereal::PathPlan::Reader path_plan;
-  cereal::ModelData::LeadData::Reader model_lead_data[2];
+  //cereal::ModelData::LeadData::Reader model_lead_data[2];
 
   float gpsAccuracy;
   float gpsAltitude;

@@ -47,9 +47,6 @@ keys = {
   b"LiveParameters": [TxType.PERSISTENT],
   b"OpenpilotEnabledToggle": [TxType.PERSISTENT],
   b"LaneChangeEnabled": [TxType.PERSISTENT],
-  b"LongControlEnabled": [TxType.PERSISTENT],
-  b"MadModeEnabled": [TxType.PERSISTENT],
-  b"AutoLaneChangeEnabled": [TxType.PERSISTENT],
   b"PandaFirmware": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
   b"PandaFirmwareHex": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
   b"PandaDongleId": [TxType.CLEAR_ON_MANAGER_START, TxType.CLEAR_ON_PANDA_DISCONNECT],
@@ -73,7 +70,13 @@ keys = {
   b"Offroad_NeosUpdate": [TxType.CLEAR_ON_MANAGER_START],
   b"Offroad_UpdateFailed": [TxType.CLEAR_ON_MANAGER_START],
   b"Offroad_HardwareUnsupported": [TxType.CLEAR_ON_MANAGER_START],
+  
+  # HKG
+  b"LongControlEnabled": [TxType.PERSISTENT],
+  b"MadModeEnabled": [TxType.PERSISTENT],
+  b"AutoLaneChangeEnabled": [TxType.PERSISTENT],
 
+  # scc smoother
   b"SccSmootherState": [TxType.PERSISTENT],
   b"SccSmootherEnabled": [TxType.PERSISTENT],
   b"SccSmootherSlowOnCurves": [TxType.PERSISTENT],

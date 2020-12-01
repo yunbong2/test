@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 from cereal import car, log
-from common.hardware import HARDWARE
 from common.numpy_fast import clip
 from common.realtime import sec_since_boot, config_realtime_process, Priority, Ratekeeper, DT_CTRL
 from common.profiler import Profiler
@@ -22,6 +21,7 @@ from selfdrive.controls.lib.alertmanager import AlertManager
 from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.controls.lib.planner import LON_MPC_STEP
 from selfdrive.locationd.calibrationd import Calibration
+from selfdrive.hardware import HARDWARE
 from selfdrive.ntune import ntune_get
 
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -321,7 +321,7 @@ class Controls:
         if self.state == State.enabled:
           if self.events.any(ET.SOFT_DISABLE):
             self.state = State.softDisabling
-            self.soft_disable_timer = 300   # 3s
+            self.soft_disable_timer = 50   # 0.5s
             self.current_alert_types.append(ET.SOFT_DISABLE)
 
         # SOFT DISABLING
@@ -478,7 +478,7 @@ class Controls:
 
     if not self.read_only:
       # send car controls over can
-      can_sends = self.CI.apply(CC, self.sm)
+      can_sends = self.CI.apply(CC, self)
       self.pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=CS.canValid))
 
     force_decel = (self.sm['dMonitoringState'].awarenessStatus < 0.) or \

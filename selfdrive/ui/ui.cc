@@ -25,9 +25,9 @@ int write_param_float(float param, const char* param_name, bool persistent_param
 }
 
 void ui_init(UIState *s) {
-  s->sm = new SubMaster({"modelV2", "controlsState", "uiLayoutState", "liveCalibration", "radarState", "thermal",
+  s->sm = new SubMaster({"modelV2", "controlsState", "uiLayoutState", "liveCalibration", "radarState", "thermal", "frame",
                          "health", "carParams", "ubloxGnss", "driverState", "dMonitoringState", "sensorEvents",
-						 "carControl", "carState", "pathPlan", "gpsLocationExternal", "model"/*, "liveMpc"*/});
+						 "carControl", "carState", "pathPlan", "gpsLocationExternal"/*, "model", "liveMpc"*/});
 
   s->started = false;
   s->status = STATUS_OFFROAD;
@@ -141,7 +141,7 @@ void update_sockets(UIState *s) {
       s->status = STATUS_WARNING;
     } else if (alertStatus == cereal::ControlsState::AlertStatus::CRITICAL) {
       s->status = STATUS_ALERT;
-    } else{
+    } else {
       s->status = scene.controls_state.getEnabled() ? STATUS_ENGAGED : STATUS_DISENGAGED;
     }
 
@@ -212,11 +212,11 @@ void update_sockets(UIState *s) {
     scene.lead_data[0] = data.getLeadOne();
     scene.lead_data[1] = data.getLeadTwo();
   }
-  if (sm.updated("model")) {
+  /*if (sm.updated("model")) {
     auto data = sm["model"].getModel();
     scene.model_lead_data[0] = data.getLead();
     scene.model_lead_data[1] = data.getLeadFuture();
-  }
+  }*/
   if (sm.updated("liveCalibration")) {
     scene.world_objects_visible = true;
     auto extrinsicl = sm["liveCalibration"].getLiveCalibration().getExtrinsicMatrix();
@@ -314,8 +314,8 @@ void ui_update(UIState *s) {
     s->scene.alert_size = cereal::ControlsState::AlertSize::NONE;
   }
 
-  // Handle controls timeout
-  if (s->started && !s->scene.frontview && ((s->sm)->frame - s->started_frame) > 5*UI_FREQ) {
+  // Handle controls/fcamera timeout
+  if (s->started && !s->scene.frontview && ((s->sm)->frame - s->started_frame) > 10*UI_FREQ) {
     if ((s->sm)->rcv_frame("controlsState") < s->started_frame) {
       // car is started, but controlsState hasn't been seen at all
       s->scene.alert_text1 = "openpilot Unavailable";
@@ -323,7 +323,8 @@ void ui_update(UIState *s) {
       s->scene.alert_size = cereal::ControlsState::AlertSize::MID;
     } else if (((s->sm)->frame - (s->sm)->rcv_frame("controlsState")) > 5*UI_FREQ) {
       // car is started, but controls is lagging or died
-      if (s->scene.alert_text2 != "Controls Unresponsive") {
+      if (s->scene.alert_text2 != "Controls Unresponsive" &&
+          s->scene.alert_text1 != "Camera Malfunction") {
         s->sound->play(AudibleAlert::CHIME_WARNING_REPEAT);
         LOGE("Controls unresponsive");
       }
@@ -332,6 +333,18 @@ void ui_update(UIState *s) {
       s->scene.alert_text2 = "Controls Unresponsive";
       s->scene.alert_size = cereal::ControlsState::AlertSize::FULL;
       s->status = STATUS_ALERT;
+    }
+
+    const uint64_t frame_pkt = (s->sm)->rcv_frame("frame");
+    const uint64_t frame_delayed = (s->sm)->frame - frame_pkt;
+    const uint64_t since_started = (s->sm)->frame - s->started_frame;
+    if ((frame_pkt > s->started_frame || since_started > 15*UI_FREQ) && frame_delayed > 5*UI_FREQ) {
+      // controls is fine, but rear camera is lagging or died
+      s->scene.alert_text1 = "Camera Malfunction";
+      s->scene.alert_text2 = "Contact Support";
+      s->scene.alert_size = cereal::ControlsState::AlertSize::FULL;
+      s->status = STATUS_DISENGAGED;
+      s->sound->stop();
     }
   }
 
