@@ -354,6 +354,7 @@ def kill_managed_process(name):
         if running[name].exitcode is None:
           cloudlog.critical("unkillable process %s failed to die!" % name)
           os.system("date >> /data/unkillable_reboot")
+          os.sync()
           HARDWARE.reboot()
           raise RuntimeError
       else:
