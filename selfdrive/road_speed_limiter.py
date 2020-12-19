@@ -76,8 +76,11 @@ class RoadSpeedLimiter:
         MIN_LIMIT = 30
         MAX_LIMIT = 120
 
-      log = "RECV: {:d}, {:d}, {:d}, {:d}, {:d}"\
-        .format(int(is_highway), int(cam_limit_speed), int(cam_limit_speed_left_dist), int(section_limit_speed), int(section_left_dist))
+      log = "RECV: " + str(is_highway)
+      log += ", " + str(cam_limit_speed)
+      log += ", " + str(cam_limit_speed_left_dist)
+      log += ", " + str(section_limit_speed)
+      log += ", " + str(section_left_dist)
 
       if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
         if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and cam_limit_speed_left_dist < (cam_limit_speed / 3.6) * 13:
@@ -92,7 +95,7 @@ class RoadSpeedLimiter:
         return 0, section_limit_speed, section_left_dist, log
 
     except Exception as e:
-      log = str(e)
+      log = "Ex: " + str(e)
       pass
 
     return 0, 0, 0, log
