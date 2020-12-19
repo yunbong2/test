@@ -47,7 +47,8 @@ class RoadSpeedLimiter:
   def get_max_speed(self, CS, v_cruise_kph):
 
     if current_milli_time() - self.last_updated > 1000 * 20:
-      return 0, 0, 0
+      log = "expired: {:d}, {:d}".format(current_milli_time(), self.last_updated)
+      return 0, 0, 0, log
 
     try:
 
@@ -75,22 +76,26 @@ class RoadSpeedLimiter:
         MIN_LIMIT = 30
         MAX_LIMIT = 120
 
+      log = "RECV: {:d}, {:d}, {:d}, {:d}, {:d}"\
+        .format(int(is_highway), int(cam_limit_speed), int(cam_limit_speed_left_dist), int(section_limit_speed), int(section_left_dist))
+
       if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
         if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and cam_limit_speed_left_dist < (cam_limit_speed / 3.6) * 13:
-          return cam_limit_speed, cam_limit_speed, cam_limit_speed_left_dist
+          return cam_limit_speed, cam_limit_speed, cam_limit_speed_left_dist, log
 
-        return 0, cam_limit_speed, cam_limit_speed_left_dist
+        return 0, cam_limit_speed, cam_limit_speed_left_dist, log
 
       elif section_left_dist is not None and section_limit_speed is not None and section_left_dist > 0:
         if MIN_LIMIT <= section_limit_speed <= MAX_LIMIT:
-          return section_limit_speed, section_limit_speed, section_left_dist
+          return section_limit_speed, section_limit_speed, section_left_dist, log
 
-        return 0, section_limit_speed, section_left_dist
+        return 0, section_limit_speed, section_left_dist, log
 
-    except:
+    except Exception as e:
+      log = str(e)
       pass
 
-    return 0, 0, 0
+    return 0, 0, 0, log
 
 
 road_speed_limiter = None

@@ -130,7 +130,7 @@ class SccSmoother:
 
   def cal_max_speed(self, frame, CC, CS, sm, clu11_speed):
 
-    limit_speed, road_limit_speed, left_dist = road_speed_limiter_get_max_speed(CS, CC.cruiseOpMaxSpeed)
+    limit_speed, road_limit_speed, left_dist, max_speed_log = road_speed_limiter_get_max_speed(CS, CC.cruiseOpMaxSpeed)
 
     self.curve_speed = self.get_curve_speed(sm, clu11_speed * CV.KPH_TO_MS) * CV.MS_TO_KPH
     max_speed = min(CC.cruiseOpMaxSpeed, self.curve_speed)
@@ -159,12 +159,12 @@ class SccSmoother:
 
     self.max_set_speed = sum(self.max_set_speed_buf) / len(self.max_set_speed_buf)
 
-    return road_limit_speed, left_dist
+    return road_limit_speed, left_dist, max_speed_log
 
   def update(self, enabled, can_sends, packer, CC, CS, frame, apply_accel, controls):
 
     clu11_speed = CS.clu11["CF_Clu_Vanz"]
-    road_limit_speed, left_dist = self.cal_max_speed(frame, CC, CS, controls.sm, clu11_speed)
+    road_limit_speed, left_dist, max_speed_log = self.cal_max_speed(frame, CC, CS, controls.sm, clu11_speed)
     CC.sccSmoother.roadLimitSpeed = road_limit_speed
     CC.sccSmoother.roadLimitSpeedLeftDist = left_dist
 
@@ -186,7 +186,7 @@ class SccSmoother:
       #  .format(float(apply_accel*CV.MS_TO_KPH), int(CS.acc_mode), int(enabled), int(CS.cruiseState_enabled), int(CS.standstill), float(CS.cruiseState_speed),
       #          int(CS.cruise_buttons), int(CS.brake_pressed), int(CS.gas_pressed))
 
-      CC.sccSmoother.logMessage = ''
+      CC.sccSmoother.logMessage = max_speed_log
       self.reset()
       self.wait_timer = ALIVE_COUNT + max(WAIT_COUNT)
       return
@@ -205,11 +205,10 @@ class SccSmoother:
 
     self.target_speed = clip(self.target_speed, MIN_SET_SPEED, self.max_set_speed)
 
-    CC.sccSmoother.logMessage = '{:.1f}/{:.1f}, {:d}/{:d}/{:d}, {:d}' \
-      .format(float(override_acc), float(accel), int(self.target_speed), int(self.curve_speed), int(road_limit_speed), int(self.btn))
+    #CC.sccSmoother.logMessage = '{:.1f}/{:.1f}, {:d}/{:d}/{:d}, {:d}' \
+    #  .format(float(override_acc), float(accel), int(self.target_speed), int(self.curve_speed), int(road_limit_speed), int(self.btn))
 
-    #CC.sccSmoother.logMessage = '{:.2f}/{:.2f}, {:.2f}, {:.1f}/{:d}, btn:{:d}' \
-    #  .format(float(apply_accel*CV.MS_TO_KPH), float(override_acc), float(accel), float(self.target_speed), int(current_set_speed), int(self.btn))
+    CC.sccSmoother.logMessage = max_speed_log
 
     if self.wait_timer > 0:
       self.wait_timer -= 1
