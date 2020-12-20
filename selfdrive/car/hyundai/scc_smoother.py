@@ -285,7 +285,7 @@ class SccSmoother:
 
       # Tuned by stonerains
 
-      if 0. < d < -lead.vRel * (9. + cruise_gap) * 2. and lead.vRel < -1.:
+      if 0. < d < -lead.vRel * (8. + cruise_gap) * 2. and lead.vRel < -1.:
         t = d / lead.vRel
         acc = -(lead.vRel / t) * CV.MS_TO_KPH * 1.8
         override_acc = acc
