@@ -14,6 +14,7 @@ class RoadSpeedLimiter:
   def __init__(self):
     self.json = None
     self.last_updated = 0
+    self.slowing_down = False
 
     try:
       os.remove(LIMIT_FILE)
@@ -48,6 +49,7 @@ class RoadSpeedLimiter:
 
     if current_milli_time() - self.last_updated > 1000 * 20:
       log = "expired: {:d}, {:d}".format(current_milli_time(), self.last_updated)
+      self.slowing_down = False
       return 0, 0, 0, log
 
     try:
@@ -83,21 +85,27 @@ class RoadSpeedLimiter:
       log += ", " + str(section_left_dist)
 
       if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
-        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and cam_limit_speed_left_dist < (cam_limit_speed / 3.6) * 13:
+        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < CS.vEgo * 13):
+
+          self.slowing_down = True
           return cam_limit_speed, cam_limit_speed, cam_limit_speed_left_dist, log
 
+        self.slowing_down = False
         return 0, cam_limit_speed, cam_limit_speed_left_dist, log
 
       elif section_left_dist is not None and section_limit_speed is not None and section_left_dist > 0:
         if MIN_LIMIT <= section_limit_speed <= MAX_LIMIT:
+          self.slowing_down = True
           return section_limit_speed, section_limit_speed, section_left_dist, log
 
+        self.slowing_down = False
         return 0, section_limit_speed, section_left_dist, log
 
     except Exception as e:
       log = "Ex: " + str(e)
       pass
 
+    self.slowing_down = False
     return 0, 0, 0, log
 
 
