@@ -287,7 +287,7 @@ class SccSmoother:
 
       if 0. < d < -lead.vRel * (8. + cruise_gap) * 2. and lead.vRel < -1.:
         t = d / lead.vRel
-        acc = -(lead.vRel / t) * CV.MS_TO_KPH * 1.8
+        acc = -(lead.vRel / t) * CV.MS_TO_KPH * 1.85
         override_acc = acc
         accel = (op_accel + acc) / 2.
       else:        
@@ -296,7 +296,7 @@ class SccSmoother:
     if accel > 0.:
       accel *= self.accel_gain * interp(clu11_speed, [35., 60., 100.], [1.5, 1.25, 1.2])
     else:
-      accel *= self.decel_gain * 1.75
+      accel *= self.decel_gain * 1.8
 
     return clip(accel, -LIMIT_DECEL, LIMIT_ACCEL), override_acc
 
