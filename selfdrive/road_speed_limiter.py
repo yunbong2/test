@@ -54,8 +54,6 @@ class RoadSpeedLimiter:
 
     try:
 
-      # car_speed_kph = CS.vEgo * 3.6
-
       road_limit_speed = self.get_val('road_limit_speed')
       is_highway = self.get_val('is_highway')
 
@@ -84,8 +82,10 @@ class RoadSpeedLimiter:
       log += ", " + str(section_limit_speed)
       log += ", " + str(section_left_dist)
 
+      v_ego = CS.clu11["CF_Clu_Vanz"] / 3.6
+
       if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
-        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < CS.vEgo * 13):
+        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < v_ego * 13):
 
           self.slowing_down = True
           return cam_limit_speed, cam_limit_speed, cam_limit_speed_left_dist, log
