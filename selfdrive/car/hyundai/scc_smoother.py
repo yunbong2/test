@@ -106,7 +106,7 @@ class SccSmoother:
       self.last_cruise_buttons = CS.cruise_buttons
 
       if not CS.cruiseState_enabled:
-        if (self.switch_only_with_gap and CS.cruise_buttons == Buttons.CANCEL) or CS.cruise_buttons == Buttons.GAP_DIST:
+        if (not self.switch_only_with_gap and CS.cruise_buttons == Buttons.CANCEL) or CS.cruise_buttons == Buttons.GAP_DIST:
           self.state += 1
           if self.state >= CruiseState.COUNT:
             self.state = 0
