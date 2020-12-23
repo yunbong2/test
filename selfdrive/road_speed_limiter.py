@@ -3,6 +3,8 @@ import fcntl
 import signal
 import json
 import time
+import socket
+from threading import Thread
 
 LIMIT_PATH = '/data/data/com.neokii.oproadlimit/files/'
 LIMIT_FILE = '/data/data/com.neokii.oproadlimit/files/oproadlimit.json'
@@ -16,31 +18,30 @@ class RoadSpeedLimiter:
     self.last_updated = 0
     self.slowing_down = False
 
-    try:
-      os.remove(LIMIT_FILE)
-    except:
-      pass
+    thread = Thread(target=self.udp_recv, args=[])
+    thread.setDaemon(True)
+    thread.start()
 
-    try:
-      signal.signal(signal.SIGIO, self.handler)
-      fd = os.open(LIMIT_PATH, os.O_RDONLY)
-      fcntl.fcntl(fd, fcntl.F_SETSIG, 0)
-      fcntl.fcntl(fd, fcntl.F_NOTIFY, fcntl.DN_MODIFY | fcntl.DN_CREATE | fcntl.DN_MULTISHOT)
-    except Exception as ex:
-      pass
+  def udp_recv(self):
 
-  def handler(self, signum, frame):
-    try:
-      self.json = None
-      if os.path.isfile(LIMIT_FILE):
-        with open(LIMIT_FILE, 'r') as f:
-          self.json = json.load(f)
-          self.last_updated = current_milli_time()
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    sock.bind(('127.0.0.1', 21829))
 
-    except Exception as ex:
-      pass
+    while True:
+
+      try:
+        data, addr = sock.recvfrom(2048)
+        self.json = json.loads(data.decode())
+        self.last_updated = current_milli_time()
+
+      except:
+        self.json = None
 
   def get_val(self, key):
+
+    if self.json is None:
+      return None
+
     if key in self.json:
       return self.json[key]
     return None
