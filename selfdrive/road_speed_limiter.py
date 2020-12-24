@@ -1,16 +1,10 @@
-import os
-import fcntl
-import signal
+
 import json
 import time
 import socket
 from threading import Thread
 
-LIMIT_PATH = '/data/data/com.neokii.oproadlimit/files/'
-LIMIT_FILE = '/data/data/com.neokii.oproadlimit/files/oproadlimit.json'
-
 current_milli_time = lambda: int(round(time.time() * 1000))
-
 
 class RoadSpeedLimiter:
   def __init__(self):
