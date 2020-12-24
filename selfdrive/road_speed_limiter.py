@@ -18,18 +18,20 @@ class RoadSpeedLimiter:
 
   def udp_recv(self):
 
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.bind(('127.0.0.1', 21829))
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
 
-    while True:
+      sock.bind(('127.0.0.1', 843))
 
-      try:
-        data, addr = sock.recvfrom(2048)
-        self.json = json.loads(data.decode())
-        self.last_updated = current_milli_time()
+      while True:
 
-      except:
-        self.json = None
+        try:
+          data, addr = sock.recvfrom(2048)
+          self.json = json.loads(data.decode())
+          self.last_updated = current_milli_time()
+
+        except:
+          self.json = None
+
 
   def get_val(self, key):
 
