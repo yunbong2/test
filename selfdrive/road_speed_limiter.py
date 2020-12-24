@@ -11,6 +11,7 @@ class RoadSpeedLimiter:
     self.json = None
     self.last_updated = 0
     self.slowing_down = False
+    self.last_exception = None
 
     thread = Thread(target=self.udp_recv, args=[])
     thread.setDaemon(True)
@@ -20,18 +21,21 @@ class RoadSpeedLimiter:
 
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
 
-      sock.bind(('127.0.0.1', 843))
+      try:
+        sock.bind(('127.0.0.1', 843))
 
-      while True:
+        while True:
 
-        try:
-          data, addr = sock.recvfrom(2048)
-          self.json = json.loads(data.decode())
-          self.last_updated = current_milli_time()
+          try:
+            data, addr = sock.recvfrom(2048)
+            self.json = json.loads(data.decode())
+            self.last_updated = current_milli_time()
 
-        except:
-          self.json = None
+          except:
+            self.json = None
 
+      except Exception as e:
+        self.last_exception = e
 
   def get_val(self, key):
 
@@ -45,7 +49,12 @@ class RoadSpeedLimiter:
   def get_max_speed(self, CS, v_cruise_kph):
 
     if current_milli_time() - self.last_updated > 1000 * 20:
-      log = "expired: {:d}, {:d}".format(current_milli_time(), self.last_updated)
+
+      if self.last_exception is not None:
+        log = str(self.last_exception)
+      else:
+        log = "expired: {:d}, {:d}".format(current_milli_time(), self.last_updated)
+
       self.slowing_down = False
       return 0, 0, 0, log
 
