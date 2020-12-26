@@ -84,10 +84,10 @@ class LanePlanner:
     r_prob *= mod
 
     # Reduce reliance on uncertain lanelines
-    #l_std_mod = interp(self.l_std, [.15, .3], [1.0, 0.0])
-    #r_std_mod = interp(self.r_std, [.15, .3], [1.0, 0.0])
-    #l_prob *= l_std_mod
-    #r_prob *= r_std_mod
+    l_std_mod = interp(self.l_std, [.15, .3], [1.0, 0.0])
+    r_std_mod = interp(self.r_std, [.15, .3], [1.0, 0.0])
+    l_prob *= l_std_mod
+    r_prob *= r_std_mod
 
     # Find current lanewidth
     self.lane_width_certainty += 0.05 * (l_prob * r_prob - self.lane_width_certainty)
@@ -106,8 +106,8 @@ class LanePlanner:
     lr_prob = l_prob + r_prob - l_prob * r_prob
 
     # neokii
-    if lr_prob > 0.65:
-      lr_prob = min(lr_prob * 1.35, 1.0)
+    #if lr_prob > 0.65:
+    #  lr_prob = min(lr_prob * 1.35, 1.0)
 
     d_poly_lane = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
     self.d_poly = lr_prob * d_poly_lane + (1.0 - lr_prob) * self.p_poly.copy()
