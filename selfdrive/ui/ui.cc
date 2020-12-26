@@ -16,8 +16,6 @@
 #include "ui.hpp"
 #include "paint.hpp"
 
-extern volatile sig_atomic_t do_exit;
-
 int write_param_float(float param, const char* param_name, bool persistent_param) {
   char s[16];
   int size = snprintf(s, sizeof(s), "%f", param);
@@ -292,8 +290,22 @@ void update_sockets(UIState *s) {
   s->started = scene.thermal.getStarted() || scene.frontview;
 }
 
-void ui_update(UIState *s) {
+static void ui_read_params(UIState *s) {
+  const uint64_t frame = s->sm->frame;
 
+  if (frame % (5*UI_FREQ) == 0) {
+    read_param(&s->is_metric, "IsMetric");
+  } else if (frame % (6*UI_FREQ) == 0) {
+    s->scene.athenaStatus = NET_DISCONNECTED;
+    uint64_t last_ping = 0;
+    if (read_param(&last_ping, "LastAthenaPingTime") == 0) {
+      s->scene.athenaStatus = nanos_since_boot() - last_ping < 70e9 ? NET_CONNECTED : NET_ERROR;
+    }
+  }
+}
+
+void ui_update(UIState *s) {
+  ui_read_params(s);
   update_sockets(s);
   ui_update_vision(s);
 
@@ -345,20 +357,6 @@ void ui_update(UIState *s) {
       s->scene.alert_size = cereal::ControlsState::AlertSize::FULL;
       s->status = STATUS_DISENGAGED;
       s->sound->stop();
-    }
-  }
-
-  // Read params
-  if ((s->sm)->frame % (5*UI_FREQ) == 0) {
-    read_param(&s->is_metric, "IsMetric");
-  } else if ((s->sm)->frame % (6*UI_FREQ) == 0) {
-    int param_read = read_param(&s->last_athena_ping, "LastAthenaPingTime");
-    if (param_read != 0) { // Failed to read param
-      s->scene.athenaStatus = NET_DISCONNECTED;
-    } else if (nanos_since_boot() - s->last_athena_ping < 70e9) {
-      s->scene.athenaStatus = NET_CONNECTED;
-    } else {
-      s->scene.athenaStatus = NET_ERROR;
     }
   }
 }

@@ -261,7 +261,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., 15.),
   },
-  
+
   EventName.startupOneplus: {
     ET.PERMANENT: Alert(
       "WARNING: Original EON deprecated",
@@ -468,7 +468,7 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       AlertStatus.userPrompt, AlertSize.mid,
       Priority.LOW, VisualAlert.steerRequired, AudibleAlert.chimePrompt, 1., 1., 1.),
   },
-  
+
   EventName.fanMalfunction: {
     ET.PERMANENT: NormalPermanentAlert("Fan Malfunction", "Contact Support"),
   },
@@ -750,13 +750,6 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       "Slow down to engage",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOW, VisualAlert.none, AudibleAlert.chimeError, .4, 2., 3.),
-  },
-
-  # TODO: this is unclear, update check only happens offroad
-  EventName.internetConnectivityNeeded: {
-    ET.PERMANENT: NormalPermanentAlert("Connect to Internet", "An Update Check Is Required to Engage"),
-    ET.NO_ENTRY: NoEntryAlert("Connect to Internet",
-                              audible_alert=AudibleAlert.chimeDisengage),
   },
 
   EventName.lowSpeedLockout: {
