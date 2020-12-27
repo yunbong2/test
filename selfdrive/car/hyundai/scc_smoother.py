@@ -16,8 +16,9 @@ MAX_SET_SPEED = V_CRUISE_MAX
 LIMIT_ACCEL = 10.
 LIMIT_DECEL = 18.
 
-ALIVE_COUNT = 8
-WAIT_COUNT = [10, 12, 14, 16]
+ALIVE_COUNT = [6, 8]
+WAIT_COUNT = [12, 13, 14, 15, 16]
+AliveIndex = 0
 WaitIndex = 0
 
 EventName = car.CarEvent.EventName
@@ -33,6 +34,15 @@ class CruiseState:
   COUNT = 2
 
 class SccSmoother:
+
+  @staticmethod
+  def get_alive_count():
+    global AliveIndex
+    count = ALIVE_COUNT[AliveIndex]
+    AliveIndex += 1
+    if AliveIndex >= len(ALIVE_COUNT):
+      AliveIndex = 0
+    return count
 
   @staticmethod
   def get_wait_count():
@@ -98,7 +108,7 @@ class SccSmoother:
     return packer.make_can_msg("CLU11", bus, values)
 
   def is_active(self, frame):
-    return frame - self.started_frame <= ALIVE_COUNT + max(WAIT_COUNT)
+    return frame - self.started_frame <= max(ALIVE_COUNT) + max(WAIT_COUNT)
 
   def dispatch_buttons(self, CC, CS):
     changed = False
@@ -189,7 +199,7 @@ class SccSmoother:
 
       CC.sccSmoother.logMessage = max_speed_log
       self.reset()
-      self.wait_timer = ALIVE_COUNT + max(WAIT_COUNT)
+      self.wait_timer = max(ALIVE_COUNT) + max(WAIT_COUNT)
       return
 
     current_set_speed = CS.cruiseState_speed * CV.MS_TO_KPH
@@ -217,7 +227,7 @@ class SccSmoother:
 
       if self.alive_timer == 0:
         self.btn = self.get_button(clu11_speed, current_set_speed)
-        self.alive_count = ALIVE_COUNT
+        self.alive_count = SccSmoother.get_alive_count()
 
       if self.btn != Buttons.NONE:
         can_sends.append(SccSmoother.create_clu11(packer, self.alive_timer, CS.scc_bus, CS.clu11, self.btn))
