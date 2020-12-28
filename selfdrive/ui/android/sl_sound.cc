@@ -99,6 +99,7 @@ void SLSound::stop() {
 }
 
 void SLSound::setVolume(int volume) {
+  volume = volume * 70 / 100;
   if (last_volume_ == volume) return;
 
   double current_time = nanos_since_boot();
