@@ -98,7 +98,7 @@ class LongitudinalMpc():
 
     # scc smoother
     cruise_gap = int(clip(CS.cruiseGap, 1., 4.))
-    TR = interp(float(cruise_gap), [1., 2., 3., 4.], [1.0, 1.3, 1.7, 2.3])
+    TR = interp(float(cruise_gap), [1., 2., 3., 4.], [1.0, 1.2, 1.5, 2.0])
 
     if self.cruise_gap != cruise_gap:
       self.cruise_gap = cruise_gap

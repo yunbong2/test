@@ -23,6 +23,7 @@ from selfdrive.controls.lib.planner import LON_MPC_STEP
 from selfdrive.locationd.calibrationd import Calibration
 from selfdrive.hardware import HARDWARE
 from selfdrive.ntune import ntune_get
+import logging
 
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
@@ -127,7 +128,8 @@ class Controls:
 
     # scc smoother
     self.is_cruise_enabled = False
-    self.cruiseOpMaxSpeed = 30
+    self.cruiseVirtualMaxSpeed = 0
+    self.apply_accel = 0.
 
     self.sm['liveCalibration'].calStatus = Calibration.CALIBRATED
     self.sm['thermal'].freeSpace = 1.
@@ -295,7 +297,7 @@ class Controls:
     #  self.v_cruise_kph = CS.cruiseState.speed * CV.MS_TO_KPH
 
     # scc smoother
-    SccSmoother.update_cruise_buttons(self, CS)
+    SccSmoother.update_cruise_buttons(self, CS, self.CP.openpilotLongitudinalControl)
 
     # decrease the soft disable timer at every step, as it's reset on
     # entrance in SOFT_DISABLING state
@@ -425,9 +427,6 @@ class Controls:
     CC.enabled = self.enabled
     CC.actuators = actuators
 
-    # scc smoother
-    CC.cruiseOpMaxSpeed = self.cruiseOpMaxSpeed
-
     CC.cruiseControl.override = True
     CC.cruiseControl.cancel = self.CP.enableCruise and not self.enabled and CS.cruiseState.enabled
 
@@ -511,7 +510,7 @@ class Controls:
     controlsState.engageable = not self.events.any(ET.NO_ENTRY)
     controlsState.longControlState = self.LoC.long_control_state
     controlsState.vPid = float(self.LoC.v_pid)
-    controlsState.vCruise = float(self.v_cruise_kph)
+    controlsState.vCruise = float(self.cruiseVirtualMaxSpeed if self.CP.openpilotLongitudinalControl else self.v_cruise_kph)
     controlsState.upAccelCmd = float(self.LoC.pid.p)
     controlsState.uiAccelCmd = float(self.LoC.pid.i)
     controlsState.ufAccelCmd = float(self.LoC.pid.f)
@@ -527,6 +526,8 @@ class Controls:
     controlsState.mapValid = self.sm['plan'].mapValid
     controlsState.forceDecel = bool(force_decel)
     controlsState.canErrorCounter = self.can_error_counter
+
+    controlsState.applyAccel = self.apply_accel
 
     if self.CP.lateralTuning.which() == 'pid':
       controlsState.lateralControlState.pidState = lac_log
@@ -596,9 +597,20 @@ class Controls:
       self.rk.monitor_time()
       self.prof.display()
 
+
+logging.basicConfig(filename='/data/exception.log',
+                    filemode='a+',
+                    format='%(asctime)s:%(levelname)s:',
+                    datefmt='%m/%d/%Y %H:%M:%S ')
+
 def main(sm=None, pm=None, logcan=None):
-  controls = Controls(sm, pm, logcan)
-  controls.controlsd_thread()
+
+  try:
+    controls = Controls(sm, pm, logcan)
+    controls.controlsd_thread()
+  except Exception:
+    logging.exception('')
+    raise
 
 
 if __name__ == "__main__":

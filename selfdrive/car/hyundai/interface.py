@@ -25,6 +25,8 @@ class CarInterface(CarInterfaceBase):
   def get_params(candidate, fingerprint=gen_empty_fingerprint(), has_relay=False, car_fw=[]):  # pylint: disable=dangerous-default-value
     ret = CarInterfaceBase.get_std_params(candidate, fingerprint, has_relay)
 
+    ret.openpilotLongitudinalControl = Params().get('LongControlEnabled') == b'1'
+
     ret.carName = "hyundai"
     ret.safetyModel = car.CarParams.SafetyModel.hyundaiLegacy
     if candidate in [CAR.SONATA]:
@@ -146,7 +148,7 @@ class CarInterface(CarInterfaceBase):
     ret.lateralTuning.lqr.k = [-110., 451.]
     ret.lateralTuning.lqr.l = [0.33, 0.318]
 
-    ret.steerRatio = 14.4
+    ret.steerRatio = 16.5
     ret.steerActuatorDelay = 0.25
     ret.steerLimitTimer = 2.5
 
@@ -155,28 +157,38 @@ class CarInterface(CarInterfaceBase):
     ret.steerMaxBP = [0.]
     ret.steerMaxV = [1.3]
 
-    ###################################################
-    # scc smoother
-    ret.longitudinalTuning.kpBP = [0., 10. * CV.KPH_TO_MS, 40. * CV.KPH_TO_MS, 130. * CV.KPH_TO_MS]
-    ret.longitudinalTuning.kpV = [1.3, 1.2, 1.0, 0.3]
-    ret.longitudinalTuning.kiBP = [0.]
-    ret.longitudinalTuning.kiV = [0.]
-    ret.longitudinalTuning.deadzoneBP = [0., 40]
-    ret.longitudinalTuning.deadzoneV = [0., 0.02]
+    if ret.openpilotLongitudinalControl:
 
-    #ret.longitudinalTuning.kpBP = [0., 5., 35.]
-    #ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
-    #ret.longitudinalTuning.kiBP = [0., 35.]
-    #ret.longitudinalTuning.kiV = [0.18, 0.12]
-    #ret.longitudinalTuning.deadzoneBP = [0.]
-    #ret.longitudinalTuning.deadzoneV = [0.]
+      ret.longitudinalTuning.kpBP = [0., 10., 30.]
+      ret.longitudinalTuning.kpV = [1.0, 0.6, 0.2]
 
-    ret.gasMaxBP = [0.]
-    ret.gasMaxV = [0.5]
-    ret.brakeMaxBP = [0., 20.]
-    ret.brakeMaxV = [1., 0.8]
+      ret.longitudinalTuning.kiBP = [0., 10., 30.]
+      ret.longitudinalTuning.kiV = [0.03, 0.015, 0.005]
 
-    ###################################################
+      ret.longitudinalTuning.deadzoneBP = [0., 30]
+      ret.longitudinalTuning.deadzoneV = [0., 0.015]
+
+      ret.gasMaxBP = [0., 30. * CV.KPH_TO_MS, 60. * CV.KPH_TO_MS, 100. * CV.KPH_TO_MS]
+      ret.gasMaxV = [0.6, 0.3, 0.2, 0.15]
+      ret.brakeMaxBP = [0., 20.]
+      ret.brakeMaxV = [1., 0.8]
+
+      ret.stoppingBrakeRate = 0.15  # brake_travel/s while trying to stop
+      ret.startingBrakeRate = 0.6  # brake_travel/s while releasing on restart
+
+    else:
+      # scc smoother
+      ret.longitudinalTuning.kpBP = [0., 10. * CV.KPH_TO_MS, 40. * CV.KPH_TO_MS, 130. * CV.KPH_TO_MS]
+      ret.longitudinalTuning.kpV = [1.3, 1.2, 1.0, 0.3]
+      ret.longitudinalTuning.kiBP = [0.]
+      ret.longitudinalTuning.kiV = [0.]
+      ret.longitudinalTuning.deadzoneBP = [0., 40]
+      ret.longitudinalTuning.deadzoneV = [0., 0.02]
+
+      ret.gasMaxBP = [0.]
+      ret.gasMaxV = [0.5]
+      ret.brakeMaxBP = [0., 20.]
+      ret.brakeMaxV = [1., 0.8]
 
     ret.radarTimeStep = 0.05
     ret.centerToFront = ret.wheelbase * 0.4
@@ -204,8 +216,9 @@ class CarInterface(CarInterfaceBase):
     ret.sccBus = 0 if 1056 in fingerprint[0] else 1 if 1056 in fingerprint[1] and 1296 not in fingerprint[1] \
                                                                      else 2 if 1056 in fingerprint[2] else -1
 
+    print("!!!!! BUS", "MDPS", ret.mdpsBus, "SAS", ret.sasBus, "SCC", ret.sccBus)
+
     ret.radarOffCan = ret.sccBus == -1
-    ret.openpilotLongitudinalControl = Params().get('LongControlEnabled') == b'1'
     ret.enableCruise = not ret.radarOffCan
 
     # set safety_hyundai_community only for non-SCC, MDPS harrness or SCC harrness cars or cars that have unknown issue
@@ -228,7 +241,7 @@ class CarInterface(CarInterfaceBase):
 
     # most HKG cars has no long control, it is safer and easier to engage by main on
 
-    if self.mad_mode_enabled and not self.CC.longcontrol:
+    if self.mad_mode_enabled:
       ret.cruiseState.enabled = ret.cruiseState.available
 
     # turning indicator alert logic
@@ -278,7 +291,7 @@ class CarInterface(CarInterfaceBase):
       events.add(EventName.turningIndicatorOn)
     #if self.CS.lkas_button_on != self.CS.prev_lkas_button:
     #  events.add(EventName.buttonCancel)
-    if self.mad_mode_enabled and not self.CC.longcontrol and EventName.pedalPressed in events.events:
+    if self.mad_mode_enabled and EventName.pedalPressed in events.events:
       events.events.remove(EventName.pedalPressed)
 
   # handle button presses

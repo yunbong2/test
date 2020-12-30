@@ -638,24 +638,25 @@ static void bb_ui_draw_debug(UIState *s)
     const UIScene *scene = &s->scene;
     char str[1024];
 
-    cereal::CarControl::SccSmoother::Reader scc_smoother = scene->car_control.getSccSmoother();
-    std::string sccLogMessage = std::string(scc_smoother.getLogMessage());
+    {
+        cereal::CarControl::SccSmoother::Reader scc_smoother = scene->car_control.getSccSmoother();
+        std::string sccLogMessage = std::string(scc_smoother.getLogMessage());
 
-    snprintf(str, sizeof(str), "SR: %.2f, SRC: %.3f, SAD: %.3f%s%s", scene->path_plan.getSteerRatio(),
-                                                        scene->path_plan.getSteerRateCost(),
-                                                        scene->path_plan.getSteerActuatorDelay(),
-                                                        sccLogMessage.size() > 0 ? ", " : "",
-                                                        sccLogMessage.c_str()
-                                                        );
+        snprintf(str, sizeof(str), "SR: %.2f, SRC: %.3f, SAD: %.3f%s%s", scene->path_plan.getSteerRatio(),
+                                                            scene->path_plan.getSteerRateCost(),
+                                                            scene->path_plan.getSteerActuatorDelay(),
+                                                            sccLogMessage.size() > 0 ? ", " : "",
+                                                            sccLogMessage.c_str()
+                                                            );
 
-    int x = scene->viz_rect.x + (bdr_s * 2);
-    int y = scene->viz_rect.bottom() - 24;
+        int x = scene->viz_rect.x + (bdr_s * 2);
+        int y = scene->viz_rect.bottom() - 24;
 
-    nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+        nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
 
-    ui_draw_text(s->vg, x, y, str, 20 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+        ui_draw_text(s->vg, x, y, str, 20 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+    }
 
-    /*
 
     int w = 184;
     int x = (s->scene.viz_rect.x + (bdr_s*2)) + 220;
@@ -666,20 +667,10 @@ static void bb_ui_draw_debug(UIState *s)
     nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
     const int text_x = x + (xo / 2) + (w / 2);
 
-    char str[1024];
+    float applyAccel = scene->controls_state.getApplyAccel();
 
-    auto lqr = scene->controls_state.getLateralControlState().getLqrState();
-
-    snprintf(str, sizeof(str), "I: %.3f", lqr.getI());
+    snprintf(str, sizeof(str), "OpAccel: %.3f", applyAccel);
     ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
-
-    y += height;
-    snprintf(str, sizeof(str), "LQR: %.3f", lqr.getLqrOutput());
-    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
-
-    y += height;
-    snprintf(str, sizeof(str), "O: %.3f, %.0f", lqr.getOutput(), scene->controls_state.getApplySteer());
-    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);*/
 
     //y += height;
     //snprintf(str, sizeof(str), "ST: %.3f", scene->car_state.getSteeringTorque());
@@ -737,14 +728,14 @@ static void bb_ui_draw_UI(UIState *s)
 }
 
 static void ui_draw_vision_maxspeed(UIState *s) {
-  char maxspeed_str[32];
-  float maxspeed = s->scene.controls_state.getVCruise();
-  int maxspeed_calc = maxspeed * 0.6225 + 0.5;
-  if (s->is_metric) {
-    maxspeed_calc = maxspeed + 0.5;
-  }
 
-  bool is_cruise_set = (maxspeed != 0 && maxspeed != SET_SPEED_NA);
+  // scc smoother
+  cereal::CarControl::SccSmoother::Reader scc_smoother = s->scene.car_control.getSccSmoother();
+  bool longControl = scc_smoother.getLongControl();
+  float cruiseVirtualMaxSpeed = scc_smoother.getCruiseVirtualMaxSpeed();
+  float cruiseRealMaxSpeed = scc_smoother.getCruiseRealMaxSpeed();
+
+  bool is_cruise_set = (cruiseRealMaxSpeed > 0 && cruiseRealMaxSpeed < SET_SPEED_NA);
 
   int viz_maxspeed_w = 184;
   int viz_maxspeed_h = 202;
@@ -764,33 +755,34 @@ static void ui_draw_vision_maxspeed(UIState *s) {
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   const int text_x = viz_maxspeed_x + (viz_maxspeed_xo / 2) + (viz_maxspeed_w / 2);
 
-  // scc smoother
-  cereal::CarControl::SccSmoother::Reader scc_smoother = s->scene.car_control.getSccSmoother();
+  if (is_cruise_set)
+  {
+    char str[256];
 
-  if (is_cruise_set) {
-
-    if(scc_smoother.getState() == 0) {
+    if(!longControl && scc_smoother.getState() == 0)
+    {
         ui_draw_text(s->vg, text_x, 148, "STOCK", 25 * 2.5, COLOR_WHITE, s->font_sans_semibold);
     }
-    else {
-        char str[256];
-        float setSpeed = s->scene.car_state.getCruiseState().getSpeed() * 3.6;
-        if(!s->is_metric)
-            setSpeed = setSpeed * 0.6225;
-
-        snprintf(str, sizeof(str), "%d", (int)(setSpeed + 0.5));
+    else
+    {
+        snprintf(str, sizeof(str), "%d", (int)(cruiseVirtualMaxSpeed + 0.5));
         ui_draw_text(s->vg, text_x, 148, str, 33 * 2.5, COLOR_WHITE, s->font_sans_semibold);
     }
 
-    snprintf(maxspeed_str, sizeof(maxspeed_str), "%d", maxspeed_calc);
-    ui_draw_text(s->vg, text_x, 242, maxspeed_str, 48 * 2.5, COLOR_WHITE, s->font_sans_bold);
+    snprintf(str, sizeof(str), "%d", (int)(cruiseRealMaxSpeed + 0.5));
+    ui_draw_text(s->vg, text_x, 242, str, 48 * 2.5, COLOR_WHITE, s->font_sans_bold);
   }
-  else {
-
-    if(scc_smoother.getState() == 0)
+  else
+  {
+    if(!longControl && scc_smoother.getState() == 0)
         ui_draw_text(s->vg, text_x, 148, "STOCK", 25 * 2.5, COLOR_WHITE, s->font_sans_semibold);
     else
-        ui_draw_text(s->vg, text_x, 148, "N/A", 25 * 2.5, COLOR_WHITE_ALPHA(100), s->font_sans_semibold);
+    {
+        if(longControl)
+            ui_draw_text(s->vg, text_x, 148, "OP", 25 * 2.5, COLOR_WHITE_ALPHA(100), s->font_sans_semibold);
+        else
+            ui_draw_text(s->vg, text_x, 148, "SCC", 25 * 2.5, COLOR_WHITE_ALPHA(100), s->font_sans_semibold);
+    }
 
     ui_draw_text(s->vg, text_x, 242, "N/A", 42 * 2.5, COLOR_WHITE_ALPHA(100), s->font_sans_semibold);
   }

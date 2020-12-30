@@ -5,6 +5,8 @@ import time
 import socket
 from threading import Thread
 
+from common.numpy_fast import interp
+
 current_milli_time = lambda: int(round(time.time() * 1000))
 
 class RoadSpeedLimiter:
@@ -105,7 +107,11 @@ class RoadSpeedLimiter:
       v_ego = CS.clu11["CF_Clu_Vanz"] / 3.6
 
       if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
-        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < v_ego * 13):
+
+        diff_speed = v_ego*3.6 - cam_limit_speed
+        sec = interp(diff_speed, [10., 30.], [13., 18.])
+
+        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < v_ego * sec):
 
           self.slowing_down = True
           return cam_limit_speed, cam_limit_speed, cam_limit_speed_left_dist, log

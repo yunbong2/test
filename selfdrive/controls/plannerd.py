@@ -7,6 +7,7 @@ from selfdrive.controls.lib.planner import Planner
 from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.controls.lib.pathplanner import PathPlanner
 import cereal.messaging as messaging
+import logging
 
 
 def plannerd_thread(sm=None, pm=None):
@@ -43,8 +44,18 @@ def plannerd_thread(sm=None, pm=None):
       PL.update(sm, pm, CP, VM, PP)
 
 
+logging.basicConfig(filename='/data/exception.log',
+                    filemode='a+',
+                    format='%(asctime)s:%(levelname)s:',
+                    datefmt='%m/%d/%Y %H:%M:%S ')
+
 def main(sm=None, pm=None):
-  plannerd_thread(sm, pm)
+
+  try:
+    plannerd_thread(sm, pm)
+  except Exception:
+    logging.exception('')
+    raise
 
 
 if __name__ == "__main__":

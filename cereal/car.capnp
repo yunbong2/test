@@ -299,14 +299,18 @@ struct CarControl {
   hudControl @5 :HUDControl;
 
   # scc smoother
-  cruiseOpMaxSpeed @8 :Float32;
-  sccSmoother @9 :SccSmoother;
+  sccSmoother @8 :SccSmoother;
 
   struct SccSmoother {
     state @0 :UInt32;
-    logMessage @1 :Text;
-    roadLimitSpeed @2 :UInt32;
-    roadLimitSpeedLeftDist @3 :UInt32;
+    longControl @1:Bool;
+
+    cruiseVirtualMaxSpeed @2 :Float32;
+    cruiseRealMaxSpeed @3 :Float32;
+
+    logMessage @4 :Text;
+    roadLimitSpeed @5 :UInt32;
+    roadLimitSpeedLeftDist @6 :UInt32;
   }
 
   struct Actuators {

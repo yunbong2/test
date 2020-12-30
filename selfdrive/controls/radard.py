@@ -12,6 +12,7 @@ from selfdrive.config import RADAR_TO_CAMERA
 from selfdrive.controls.lib.cluster.fastcluster_py import cluster_points_centroid
 from selfdrive.controls.lib.radar_helpers import Cluster, Track
 from selfdrive.swaglog import cloudlog
+import logging
 
 
 class KalmanParams():
@@ -229,8 +230,18 @@ def radard_thread(sm=None, pm=None, can_sock=None):
     rk.monitor_time()
 
 
+logging.basicConfig(filename='/data/exception.log',
+                    filemode='a+',
+                    format='%(asctime)s:%(levelname)s:',
+                    datefmt='%m/%d/%Y %H:%M:%S ')
+
 def main(sm=None, pm=None, can_sock=None):
-  radard_thread(sm, pm, can_sock)
+
+  try:
+    radard_thread(sm, pm, can_sock)
+  except Exception:
+    logging.exception('')
+    raise
 
 
 if __name__ == "__main__":
