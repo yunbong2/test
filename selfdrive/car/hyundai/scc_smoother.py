@@ -182,7 +182,7 @@ class SccSmoother:
     CC.sccSmoother.roadLimitSpeed = road_limit_speed
     CC.sccSmoother.roadLimitSpeedLeftDist = left_dist
 
-    controls.cruiseVirtualMaxSpeed = clip(CS.cruiseState_speed * CV.MS_TO_KPH, MIN_SET_SPEED, self.max_set_speed)
+    controls.cruiseVirtualMaxSpeed = float(clip(CS.cruiseState_speed * CV.MS_TO_KPH, MIN_SET_SPEED, self.max_set_speed))
 
     CC.sccSmoother.longControl = self.longcontrol
     CC.sccSmoother.cruiseVirtualMaxSpeed = controls.cruiseVirtualMaxSpeed
@@ -345,7 +345,7 @@ class SccSmoother:
     else:
       model_speed = 255.
 
-    return model_speed
+    return float(model_speed)
 
   def cal_target_speed(self, accel, CC, CS, clu11_speed, controls):
 
