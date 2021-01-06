@@ -129,6 +129,7 @@ class Controls:
     # scc smoother
     self.is_cruise_enabled = False
     self.cruiseVirtualMaxSpeed = 0
+    self.clu_speed_ms = 0.
     self.apply_accel = 0.
 
     self.sm['liveCalibration'].calStatus = Calibration.CALIBRATED
@@ -527,6 +528,7 @@ class Controls:
     controlsState.forceDecel = bool(force_decel)
     controlsState.canErrorCounter = self.can_error_counter
 
+    controlsState.cluSpeedMs = self.clu_speed_ms
     controlsState.applyAccel = self.apply_accel
 
     if self.CP.lateralTuning.which() == 'pid':

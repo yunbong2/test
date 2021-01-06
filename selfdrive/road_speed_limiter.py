@@ -4,6 +4,7 @@ import threading
 import time
 import socket
 from threading import Thread
+from common.params import Params
 
 from common.numpy_fast import interp
 
@@ -16,6 +17,8 @@ class RoadSpeedLimiter:
     self.slowing_down = False
     self.last_exception = None
     self.lock = threading.Lock()
+
+    self.longcontrol = Params().get('LongControlEnabled') == b'1'
 
     thread = Thread(target=self.udp_recv, args=[])
     thread.setDaemon(True)
@@ -109,7 +112,11 @@ class RoadSpeedLimiter:
       if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
 
         diff_speed = v_ego*3.6 - cam_limit_speed
-        sec = interp(diff_speed, [10., 30.], [13., 18.])
+
+        if self.longcontrol:
+          sec = interp(diff_speed, [10., 30.], [10., 13.])
+        else:
+          sec = interp(diff_speed, [10., 30.], [13., 18.])
 
         if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < v_ego * sec):
 
