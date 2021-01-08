@@ -668,17 +668,43 @@ static void bb_ui_draw_debug(UIState *s)
     const int text_x = x + (xo / 2) + (w / 2);
 
     float applyAccel = scene->controls_state.getApplyAccel();
+    int longControlState = scene->controls_state.getLongControlState();
+    float vPid = scene->controls_state.getVPid();
+    float upAccelCmd = scene->controls_state.getUpAccelCmd();
+    float uiAccelCmd = scene->controls_state.getUiAccelCmd();
+    float ufAccelCmd = scene->controls_state.getUfAccelCmd();
+    float gas = scene->car_state.getActuators().getGas();
+    float brake = scene->car_state.getActuators().getBrake();
 
-    snprintf(str, sizeof(str), "OpAccel: %.3f", applyAccel);
+    const char* long_state[] = {"off", "pid", "stopping", "starting"}
+
+    y += height;
+    snprintf(str, sizeof(str), "State: %s", long_state[longControlState]);
     ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
 
-    //y += height;
-    //snprintf(str, sizeof(str), "ST: %.3f", scene->car_state.getSteeringTorque());
-    //ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+    y += height;
+    snprintf(str, sizeof(str), "vPid: %.3f", vPid);
+    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
 
-    //y += height;
-    //snprintf(str, sizeof(str), "CURV: %.3f", scene->pCurvature * 1000.);
-    //ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+    y += height;
+    snprintf(str, sizeof(str), "P: %.3f", upAccelCmd);
+    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+
+    y += height;
+    snprintf(str, sizeof(str), "I: %.3f", uiAccelCmd);
+    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+
+    y += height;
+    snprintf(str, sizeof(str), "F: %.3f", ufAccelCmd);
+    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+
+    y += height;
+    snprintf(str, sizeof(str), "Gas: %.3f, Brake: %.3f", gas, brake);
+    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
+
+    y += height;
+    snprintf(str, sizeof(str), "OpAccel: %.3f", applyAccel);
+    ui_draw_text(s->vg, text_x, y, str, 25 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
 
     //y += height;
     //snprintf(str, sizeof(str), "Angle: %.3f, %.3f", scene->liveParams.getAngleOffset(),
