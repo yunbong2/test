@@ -668,13 +668,13 @@ static void bb_ui_draw_debug(UIState *s)
     const int text_x = x + (xo / 2) + (w / 2);
 
     float applyAccel = scene->controls_state.getApplyAccel();
-    int longControlState = scene->controls_state.getLongControlState();
+    int longControlState = (int)scene->controls_state.getLongControlState();
     float vPid = scene->controls_state.getVPid();
     float upAccelCmd = scene->controls_state.getUpAccelCmd();
     float uiAccelCmd = scene->controls_state.getUiAccelCmd();
     float ufAccelCmd = scene->controls_state.getUfAccelCmd();
-    float gas = scene->car_state.getActuators().getGas();
-    float brake = scene->car_state.getActuators().getBrake();
+    float gas = scene->car_control.getActuators().getGas();
+    float brake = scene->car_control.getActuators().getBrake();
 
     const char* long_state[] = {"off", "pid", "stopping", "starting"}
 
