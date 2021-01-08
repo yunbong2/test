@@ -676,7 +676,7 @@ static void bb_ui_draw_debug(UIState *s)
     float gas = scene->car_control.getActuators().getGas();
     float brake = scene->car_control.getActuators().getBrake();
 
-    const char* long_state[] = {"off", "pid", "stopping", "starting"}
+    const char* long_state[] = {"off", "pid", "stopping", "starting"};
 
     y += height;
     snprintf(str, sizeof(str), "State: %s", long_state[longControlState]);
