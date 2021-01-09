@@ -80,6 +80,16 @@ static void ui_draw_text(NVGcontext *vg, float x, float y, const char* string, f
   nvgText(vg, x, y, string, NULL);
 }
 
+static void ui_print(UIState *s, int x, int y,  const char* fmt, ... )
+{
+  char* msg_buf = NULL;
+  va_list args;
+  va_start(args, fmt);
+  vasprintf( &msg_buf, fmt, args);
+  va_end(args);
+  nvgText(s->vg, x, y, msg_buf, NULL);
+}
+
 static void draw_chevron(UIState *s, float x_in, float y_in, float sz,
                           NVGcolor fillColor, NVGcolor glowColor) {
   float x, y;
@@ -716,6 +726,31 @@ static void ui_draw_tpms(UIState *s) {
   } else {
     ui_draw_text(s->vg, pos_x+55, 220, tpmsRr, 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
   }
+}
+
+static void ui_draw_debug(UIState *s) 
+{
+  UIScene &scene = s->scene;
+  const int x_gain = 60;
+  const int y_gain = 0;
+  int ui_viz_rx = scene.viz_rect.x + 300;
+  int ui_viz_ry = 108;
+  int ui_viz_rx_center = scene.viz_rect.centerX();
+
+  nvgFontSize(s->vg, 60);
+  nvgFontFace(s->vg, "sans-semibold");
+  nvgFillColor(s->vg, COLOR_WHITE_ALPHA(150));
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_MIDDLE);
+  ui_print(s, ui_viz_rx_center + x_gain, ui_viz_ry+650 + y_gain, "커브");
+  if (scene.curvature >= 0.001) {
+    ui_print(s, ui_viz_rx_center + x_gain, ui_viz_ry+700 + y_gain, "↖%.4f　", abs(scene.curvature));
+  } else if (scene.curvature <= -0.001) {
+    ui_print(s, ui_viz_rx_center + x_gain, ui_viz_ry+700 + y_gain, "　%.4f↗", abs(scene.curvature));
+  } else {
+    ui_print(s, ui_viz_rx_center + x_gain, ui_viz_ry+700 + y_gain, "　%.4f　", abs(scene.curvature));
+  }
+  ui_print(s, ui_viz_rx_center + x_gain, ui_viz_ry+750 + y_gain, " 좌측간격(m)       차선폭(m)       우측간격(m)");
+  ui_print(s, ui_viz_rx_center + x_gain, ui_viz_ry+800 + y_gain, "%.2f                       %.2f                       %.2f", scene.pathPlan.lPoly, scene.pathPlan.laneWidth, abs(scene.pathPlan.rPoly));
 }
 
 static void bb_ui_draw_debug(UIState *s)
