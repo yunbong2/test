@@ -166,6 +166,8 @@ void update_sockets(UIState *s) {
    {
     auto data = sm["carState"].getCarState();
     scene.car_state = sm["carState"].getCarState();
+    scene.brakePress = data.getBrakePressed();
+    scene.brakeLights = data.getBrakeLights();
     scene.tpmsPressureFl = data.getTpmsPressureFl();
     scene.tpmsPressureFr = data.getTpmsPressureFr();
     scene.tpmsPressureRl = data.getTpmsPressureRl();
