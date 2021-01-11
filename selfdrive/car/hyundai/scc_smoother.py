@@ -154,12 +154,7 @@ class SccSmoother:
     self.curve_speed = self.get_curve_speed(sm, clu11_speed * CV.KPH_TO_MS) * CV.MS_TO_KPH
     max_speed = min(controls.v_cruise_kph, self.curve_speed)
 
-    should_smooth = int(abs(self.curve_speed - max_speed)) > 0
-
     if limit_speed >= 30:
-
-      if int(abs(limit_speed - max_speed)) > 0:
-        should_smooth = True
 
       max_speed = min(max_speed, limit_speed)
 
@@ -178,7 +173,7 @@ class SccSmoother:
       self.slowing_down_alert = False
       self.slowing_down = False
 
-    self.update_max_speed(int(max_speed), should_smooth)
+    self.update_max_speed(int(max_speed + 0.5))
 
     return road_limit_speed, left_dist, max_speed_log
 
@@ -223,6 +218,9 @@ class SccSmoother:
     else:
       accel = 0.
       CC.sccSmoother.state = self.state = CruiseState.STOCK
+
+      if not ascc_enabled:
+        self.reset()
 
     self.cal_target_speed(accel, CC, CS, clu11_speed, controls)
 
@@ -373,9 +371,9 @@ class SccSmoother:
           set_speed = clip(clu11_speed, MIN_SET_SPEED, MAX_SET_SPEED)
           self.target_speed = set_speed
 
-  def update_max_speed(self, max_speed, should_smooth):
+  def update_max_speed(self, max_speed):
 
-    if not should_smooth or self.max_speed <= 0:
+    if not self.longcontrol or self.max_speed <= 0:
       self.max_speed = max_speed
       self.max_speed_wait_timer = 0
     else:
@@ -388,8 +386,6 @@ class SccSmoother:
           self.max_speed += 1
         elif self.max_speed > max_speed:
           self.max_speed -= 1
-        else:
-          self.max_speed_wait_timer = 0
 
   @staticmethod
   def update_cruise_buttons(controls, CS, longcontrol): # called by controlds's state_transition
