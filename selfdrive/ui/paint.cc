@@ -633,6 +633,33 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
   nvgStroke(s->vg);
 }
 
+static void bb_ui_draw_basic_info(UIState *s)
+{
+    const UIScene *scene = &s->scene;
+    char str[1024];
+
+#if UI_FEATURE_DEBUG
+    cereal::CarControl::SccSmoother::Reader scc_smoother = scene->car_control.getSccSmoother();
+    std::string sccLogMessage = std::string(scc_smoother.getLogMessage());
+#else
+    std::string sccLogMessage = "";
+#endif
+
+    snprintf(str, sizeof(str), "SR: %.2f, SRC: %.3f, SAD: %.3f%s%s", scene->path_plan.getSteerRatio(),
+                                                        scene->path_plan.getSteerRateCost(),
+                                                        scene->path_plan.getSteerActuatorDelay(),
+                                                        sccLogMessage.size() > 0 ? ", " : "",
+                                                        sccLogMessage.c_str()
+                                                        );
+
+    int x = scene->viz_rect.x + (bdr_s * 2);
+    int y = scene->viz_rect.bottom() - 24;
+
+    nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+
+    ui_draw_text(s->vg, x, y, str, 20 * 2.5, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+}
+
 static void bb_ui_draw_debug(UIState *s)
 {
     const UIScene *scene = &s->scene;
@@ -747,6 +774,8 @@ static void bb_ui_draw_UI(UIState *s)
 #if UI_FEATURE_RIGHT
   bb_ui_draw_measures_right(s, bb_dmr_x, bb_dmr_y, bb_dmr_w);
 #endif
+
+  bb_ui_draw_basic_info(s);
 
 #if UI_FEATURE_DEBUG
   bb_ui_draw_debug(s);
