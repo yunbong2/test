@@ -463,7 +463,7 @@ struct CarParams {
     kpV @1 :List(Float32);
     kiBP @2 :List(Float32);
     kiV @3 :List(Float32);
-    kf @4 :List(Float32);
+    kf @4 :Float32;
     deadzoneBP @5 :List(Float32);
     deadzoneV @6 :List(Float32);
   }
