@@ -81,6 +81,7 @@ class CarInterfaceBase():
     ret.longitudinalTuning.kpV = [1.]
     ret.longitudinalTuning.kiBP = [0.]
     ret.longitudinalTuning.kiV = [1.]
+    ret.longitudinalTuning.kf = 1.
     return ret
 
   # returns a car.CarState, pass in car.CarControl

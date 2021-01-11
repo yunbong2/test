@@ -181,6 +181,7 @@ class CarInterface(CarInterfaceBase):
       ret.longitudinalTuning.kpV = [1.0, 0.7, 0.5, 0.3]
       ret.longitudinalTuning.kiBP = [0., 35.]
       ret.longitudinalTuning.kiV = [0.5, 0.3]
+      ret.longitudinalTuning.kf = 0.5
       ret.longitudinalTuning.deadzoneBP = [0., 40]
       ret.longitudinalTuning.deadzoneV = [0., 0.02]
 
