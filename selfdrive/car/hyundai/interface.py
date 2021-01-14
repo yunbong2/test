@@ -191,7 +191,7 @@ class CarInterface(CarInterfaceBase):
       ret.brakeMaxV = [1., 0.8]
 
       ret.stoppingBrakeRate = 0.15  # brake_travel/s while trying to stop
-      ret.startingBrakeRate = 0.8  # brake_travel/s while releasing on restart
+      ret.startingBrakeRate = 1.0  # brake_travel/s while releasing on restart
 
     else:
       # scc smoother
