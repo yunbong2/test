@@ -159,29 +159,11 @@ class CarInterface(CarInterfaceBase):
 
     if ret.openpilotLongitudinalControl:
 
-      '''
-      ret.longitudinalTuning.kpBP = [0., 5., 35.]
-      ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
-      ret.longitudinalTuning.kiBP = [0., 35.]
-      ret.longitudinalTuning.kiV = [0.18, 0.12]
-      ret.longitudinalTuning.deadzoneBP = [0.]
-      ret.longitudinalTuning.deadzoneV = [0.]
-      '''
-
-      '''
-      ret.longitudinalTuning.kpBP = [0., 10., 30.]
-      ret.longitudinalTuning.kpV = [1.0, 0.6, 0.2]
-      ret.longitudinalTuning.kiBP = [0., 10., 30.]
-      ret.longitudinalTuning.kiV = [0.03, 0.015, 0.005]
-      ret.longitudinalTuning.deadzoneBP = [0., 30]
-      ret.longitudinalTuning.deadzoneV = [0., 0.015]
-      '''
-
-      ret.longitudinalTuning.kpBP = [0., 18.*CV.KPH_TO_MS, 126.*CV.KPH_TO_MS]
-      ret.longitudinalTuning.kpV = [1.2, 0.8, 0.5]
-      ret.longitudinalTuning.kiBP = [0., 126.*CV.KPH_TO_MS]
+      ret.longitudinalTuning.kpBP = [0., 20.*CV.KPH_TO_MS, 120.*CV.KPH_TO_MS]
+      ret.longitudinalTuning.kpV = [1.0, 0.8, 0.5]
+      ret.longitudinalTuning.kiBP = [0., 120.*CV.KPH_TO_MS]
       ret.longitudinalTuning.kiV = [0.05, 0.03]
-      ret.longitudinalTuning.kf = 0.9
+      ret.longitudinalTuning.kf = 1.0
       ret.longitudinalTuning.deadzoneBP = [0., 100.*CV.KPH_TO_MS]
       ret.longitudinalTuning.deadzoneV = [0., 0.015]
 
