@@ -891,14 +891,17 @@ static void bb_ui_draw_UI(UIState *s)
   const int bb_dmr_y = (box_y + (bdr_is * 1.5)) + UI_FEATURE_RIGHT_Y;
 
 #if UI_FEATURE_LEFT
-  bb_ui_draw_measures_left(s, bb_dml_x, bb_dml_y, bb_dml_w);
+  if (s->SccSmootherSwitchGapOnly == 0)
+    bb_ui_draw_measures_left(s, bb_dml_x, bb_dml_y, bb_dml_w);
 #endif
 
 #if UI_FEATURE_RIGHT
-  bb_ui_draw_measures_right(s, bb_dmr_x, bb_dmr_y, bb_dmr_w);
+  if (s->SccSmootherSwitchGapOnly == 0)
+    bb_ui_draw_measures_right(s, bb_dmr_x, bb_dmr_y, bb_dmr_w);
 #endif
 
-  bb_ui_draw_basic_info(s);
+  if (s->SccSmootherSwitchGapOnly == 0)
+    bb_ui_draw_basic_info(s);
 
 #if UI_FEATURE_DEBUG
   bb_ui_draw_debug(s);
@@ -1110,12 +1113,14 @@ static void ui_draw_vision_header(UIState *s) {
   //ui_draw_vision_event(s);
   bb_ui_draw_UI(s);
   ui_draw_extras(s);
-  ui_draw_tpms(s);
+  if (s->SccSmootherSwitchGapOnly == 0)
+    ui_draw_tpms(s);
 }
 
 static void ui_draw_vision_footer(UIState *s) {
   ui_draw_vision_face(s);
-  ui_draw_debug(s);
+  if (s->SccSmootherSwitchGapOnly == 0)
+    ui_draw_debug(s);
 
 #if UI_FEATURE_BRAKE
   //ui_draw_vision_brake(s);

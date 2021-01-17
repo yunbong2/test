@@ -274,6 +274,7 @@ typedef struct UIState {
   bool longitudinal_control;
   uint64_t started_frame;
 
+  int SccSmootherSwitchGapOnly;
   bool alert_blinked;
   float alert_blinking_alpha;
 

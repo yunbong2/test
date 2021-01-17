@@ -32,6 +32,7 @@ void ui_init(UIState *s) {
   s->scene.satelliteCount = -1;
   read_param(&s->is_metric, "IsMetric");
 
+  read_param(&s->SccSmootherSwitchGapOnly, "SccSmootherSwitchGapOnly");
   s->fb = framebuffer_init("ui", 0, true, &s->fb_w, &s->fb_h);
   assert(s->fb);
 
@@ -379,5 +380,8 @@ void ui_update(UIState *s) {
       s->status = STATUS_DISENGAGED;
       s->sound->stop();
     }
+  }
+  if ((s->sm)->frame % (5*UI_FREQ) == 0) {
+    read_param(&s->SccSmootherSwitchGapOnly, "SccSmootherSwitchGapOnly");
   }
 }
