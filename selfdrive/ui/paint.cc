@@ -934,6 +934,7 @@ static void ui_draw_vision_maxspeed(UIState *s) {
 
 static void ui_draw_vision_speed(UIState *s) {
   const Rect &viz_rect = s->scene.viz_rect;
+  const UIScene *scene = &s->scene;
   float v_ego = s->scene.controls_state.getCluSpeedMs();
   float speed = v_ego * 2.2369363 + 0.5;
   if (s->is_metric){
@@ -943,12 +944,14 @@ static void ui_draw_vision_speed(UIState *s) {
   const int viz_speed_x = viz_rect.centerX() - viz_speed_w/2;
   char speed_str[32];
 
-  nvgBeginPath(s->vg);
-  nvgRect(s->vg, viz_speed_x, viz_rect.y, viz_speed_w, header_h);
+  NVGcolor val_color = COLOR_WHITE;
+
+  if( scene->brakePress ) val_color = COLOR_RED;
+  else if( scene->brakeLights ) val_color = nvgRGBA(201, 34, 49, 100);
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
 
   snprintf(speed_str, sizeof(speed_str), "%d", (int)speed);
-  ui_draw_text(s->vg, viz_rect.centerX(), 240, speed_str, 96*2.5, COLOR_WHITE, s->font_sans_bold);
+  ui_draw_text(s->vg, viz_rect.centerX(), 240, speed_str, 96*2.5, val_color, s->font_sans_bold);
   ui_draw_text(s->vg, viz_rect.centerX(), 320, s->is_metric?"km/h":"mph", 36*2.5, COLOR_WHITE_ALPHA(200), s->font_sans_regular);
 }
 
@@ -1079,7 +1082,7 @@ static void ui_draw_vision_footer(UIState *s) {
   ui_draw_vision_face(s);
 
 #if UI_FEATURE_BRAKE
-  ui_draw_vision_brake(s);
+  //ui_draw_vision_brake(s);
 #endif
 }
 

@@ -171,6 +171,8 @@ typedef struct UIScene {
   float max_distance;
   float lane_line_probs[4];
   float road_edge_stds[2];
+  bool brakePress;
+  bool brakeLights;
   //tpms
   float tpmsPressureFl;
   float tpmsPressureFr;
