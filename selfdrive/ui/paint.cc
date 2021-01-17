@@ -904,7 +904,8 @@ static void bb_ui_draw_UI(UIState *s)
     bb_ui_draw_basic_info(s);
 
 #if UI_FEATURE_DEBUG
-  bb_ui_draw_debug(s);
+  if (s->SccSmootherSwitchGapOnly == 0)
+    bb_ui_draw_debug(s);
 #endif
 }
 
@@ -1120,6 +1121,7 @@ static void ui_draw_vision_header(UIState *s) {
 static void ui_draw_vision_footer(UIState *s) {
   if (s->SccSmootherSwitchGapOnly == 0)
     ui_draw_vision_face(s);
+  if (s->SccSmootherSwitchGapOnly == 0)
     ui_draw_debug(s);
 
 #if UI_FEATURE_BRAKE
