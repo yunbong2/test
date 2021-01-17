@@ -633,6 +633,94 @@ static void bb_ui_draw_measures_right(UIState *s, int bb_x, int bb_y, int bb_w )
   nvgStroke(s->vg);
 }
 
+static void ui_draw_tpms(UIState *s) {
+  char tpmsFl[32];
+  char tpmsFr[32];
+  char tpmsRl[32];
+  char tpmsRr[32];
+  const int viz_x_gain = 0; // tpms 위치 이동시 사용하는 부분 x축
+  const int viz_y_gain = 21; //y축 이동 숫자가 커지면 아래로 내려옴
+  int viz_tpms_w = 250;
+  int viz_tpms_h = 160;
+  int viz_tpms_x = s->scene.viz_rect.x + viz_x_gain + s->scene.viz_rect.w - 510;
+  int viz_tpms_y = s->scene.viz_rect.y + viz_y_gain + (bdr_s*1.5);
+  float maxv = 0;
+  float minv = 300;
+
+  if (maxv < s->scene.tpmsPressureFl) {
+    maxv = s->scene.tpmsPressureFl;
+  }
+  if (maxv < s->scene.tpmsPressureFr) {
+    maxv = s->scene.tpmsPressureFr;
+  }
+  if (maxv < s->scene.tpmsPressureRl) {
+    maxv = s->scene.tpmsPressureRl;
+  }
+  if (maxv < s->scene.tpmsPressureRr) {
+    maxv = s->scene.tpmsPressureRr;
+  }
+  if (minv > s->scene.tpmsPressureFl) {
+    minv = s->scene.tpmsPressureFl;
+  }
+  if (minv > s->scene.tpmsPressureFr) {
+    minv = s->scene.tpmsPressureFr;
+  }
+  if (minv > s->scene.tpmsPressureRl) {
+    minv = s->scene.tpmsPressureRl;
+  }
+  if (minv > s->scene.tpmsPressureRr) {
+    minv = s->scene.tpmsPressureRr;
+  }
+
+  // Draw Background
+  if ((maxv - minv) > 3) {
+    ui_draw_rect(s->vg, viz_tpms_x, viz_tpms_y, viz_tpms_w, viz_tpms_h, COLOR_RED_ALPHA(80), 20);    
+  } else {
+    ui_draw_rect(s->vg, viz_tpms_x, viz_tpms_y, viz_tpms_w, viz_tpms_h, COLOR_BLACK_ALPHA(80), 20);
+  }
+
+  // Draw Border
+  NVGcolor color = COLOR_OCHRE_ALPHA(200);
+  ui_draw_rect(s->vg, viz_tpms_x, viz_tpms_y, viz_tpms_w, viz_tpms_h, color, 20, 5);
+
+  nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
+  const int pos_x = viz_tpms_x + (viz_tpms_w / 2);
+  ui_draw_text(s->vg, pos_x + viz_x_gain, 120 + viz_y_gain, "TPMS", 60, COLOR_ORANGE_ALPHA(200), s->font_sans_bold);
+  snprintf(tpmsFl, sizeof(tpmsFl), "%.1f", s->scene.tpmsPressureFl);
+  snprintf(tpmsFr, sizeof(tpmsFr), "%.1f", s->scene.tpmsPressureFr);
+  snprintf(tpmsRl, sizeof(tpmsRl), "%.1f", s->scene.tpmsPressureRl);
+  snprintf(tpmsRr, sizeof(tpmsRr), "%.1f", s->scene.tpmsPressureRr);
+  if (s->scene.tpmsPressureFl < 34) {
+    ui_draw_text(s->vg, pos_x-55 + viz_x_gain, 170 + viz_y_gain, tpmsFl, 60, COLOR_RED, s->font_sans_bold);
+  } else if (s->scene.tpmsPressureFl > 50) {
+    ui_draw_text(s->vg, pos_x-55 + viz_x_gain, 170 + viz_y_gain, "N/A", 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  } else {
+    ui_draw_text(s->vg, pos_x-55 + viz_x_gain, 170 + viz_y_gain, tpmsFl, 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  }
+  if (s->scene.tpmsPressureFr < 34) {
+    ui_draw_text(s->vg, pos_x+55 + viz_x_gain, 170 + viz_y_gain, tpmsFr, 60, COLOR_RED, s->font_sans_bold);
+  } else if (s->scene.tpmsPressureFr > 50) {
+    ui_draw_text(s->vg, pos_x+55 + viz_x_gain, 170 + viz_y_gain, "N/A", 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  } else {
+    ui_draw_text(s->vg, pos_x+55 + viz_x_gain, 170 + viz_y_gain, tpmsFr, 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  }
+  if (s->scene.tpmsPressureRl < 34) {
+    ui_draw_text(s->vg, pos_x-55 + viz_x_gain, 220 + viz_y_gain, tpmsRl, 60, COLOR_RED, s->font_sans_bold);
+  } else if (s->scene.tpmsPressureRl > 50) {
+    ui_draw_text(s->vg, pos_x-55 + viz_x_gain, 220 + viz_y_gain, "N/A", 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  } else {
+    ui_draw_text(s->vg, pos_x-55 + viz_x_gain, 220 + viz_y_gain, tpmsRl, 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  }
+  if (s->scene.tpmsPressureRr < 34) {
+    ui_draw_text(s->vg, pos_x+55 + viz_x_gain, 220 + viz_y_gain, tpmsRr, 60, COLOR_RED, s->font_sans_bold);
+  } else if (s->scene.tpmsPressureRr > 50) {
+    ui_draw_text(s->vg, pos_x+55 + viz_x_gain, 220 + viz_y_gain, "N/A", 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  } else {
+    ui_draw_text(s->vg, pos_x+55 + viz_x_gain, 220 + viz_y_gain, tpmsRr, 60, COLOR_WHITE_ALPHA(200), s->font_sans_semibold);
+  }
+}
+
+
 static void bb_ui_draw_basic_info(UIState *s)
 {
     const UIScene *scene = &s->scene;
@@ -984,6 +1072,7 @@ static void ui_draw_vision_header(UIState *s) {
   //ui_draw_vision_event(s);
   bb_ui_draw_UI(s);
   ui_draw_extras(s);
+  ui_draw_tpms(s);
 }
 
 static void ui_draw_vision_footer(UIState *s) {

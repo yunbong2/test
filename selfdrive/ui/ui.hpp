@@ -55,7 +55,25 @@
 #define COLOR_WHITE nvgRGBA(255, 255, 255, 255)
 #define COLOR_WHITE_ALPHA(x) nvgRGBA(255, 255, 255, x)
 #define COLOR_YELLOW nvgRGBA(218, 202, 37, 255)
+#define COLOR_YELLOW_ALPHA(x) nvgRGBA(218, 202, 37, x)
 #define COLOR_RED nvgRGBA(201, 34, 49, 255)
+#define COLOR_RED_ALPHA(x) nvgRGBA(201, 34, 49, x)
+#define COLOR_OCHRE nvgRGBA(218, 111, 37, 255)
+#define COLOR_OCHRE_ALPHA(x) nvgRGBA(218, 111, 37, x)
+#define COLOR_GREEN nvgRGBA(0, 255, 0, 255)
+#define COLOR_GREEN_ALPHA(x) nvgRGBA(0, 255, 0, x)
+#define COLOR_ORANGE nvgRGBA(255, 175, 3, 255)
+#define COLOR_ORANGE_ALPHA(x) nvgRGBA(255, 175, 3, x)
+#define COLOR_ENGAGED nvgRGBA(0, 170, 255, 255)
+#define COLOR_ENGAGED_ALPHA(x) nvgRGBA(0, 170, 255, x)
+#define COLOR_WARNING nvgRGBA(218, 111, 37, 100)
+#define COLOR_WARNING_ALPHA(x) nvgRGBA(218, 111, 37, x)
+#define COLOR_ENGAGEABLE nvgRGBA(23, 51, 73, 100)
+#define COLOR_ENGAGEABLE_ALPHA(x) nvgRGBA(23, 51, 73, x)
+#define COLOR_LIME nvgRGBA(0, 255, 0, 255)
+#define COLOR_LIME_ALPHA(x) nvgRGBA(0, 255, 0, x)
+#define COLOR_FORIP nvgRGBA(231, 255, 51, 255)
+#define COLOR_FORIP_ALPHA(x) nvgRGBA(231, 255, 51, x)
 
 #define UI_BUF_COUNT 4
 
@@ -153,6 +171,11 @@ typedef struct UIScene {
   float max_distance;
   float lane_line_probs[4];
   float road_edge_stds[2];
+  //tpms
+  float tpmsPressureFl;
+  float tpmsPressureFr;
+  float tpmsPressureRl;
+  float tpmsPressureRr;
   
   // neokii dev UI
   cereal::CarState::Reader car_state;
