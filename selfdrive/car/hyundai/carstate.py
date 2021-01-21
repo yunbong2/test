@@ -197,19 +197,19 @@ class CarState(CarStateBase):
       self.lkas_button_on = bool(cp_cam.vl["LKAS11"]["CF_Lkas_LdwsSysState"])
 
     #TPMS
-    if cp.vl["TPMS11"]['PRESSURE_FL'] > 43:
+    if cp.vl["TPMS11"]['PRESSURE_FL'] > 46:
       ret.tpmsPressureFl = cp.vl["TPMS11"]['PRESSURE_FL'] * 5 * 0.145
     else:
       ret.tpmsPressureFl = cp.vl["TPMS11"]['PRESSURE_FL']
-    if cp.vl["TPMS11"]['PRESSURE_FR'] > 43:
+    if cp.vl["TPMS11"]['PRESSURE_FR'] > 46:
       ret.tpmsPressureFr = cp.vl["TPMS11"]['PRESSURE_FR'] * 5 * 0.145
     else:
       ret.tpmsPressureFr = cp.vl["TPMS11"]['PRESSURE_FR']
-    if cp.vl["TPMS11"]['PRESSURE_RL'] > 43:
+    if cp.vl["TPMS11"]['PRESSURE_RL'] > 46:
       ret.tpmsPressureRl = cp.vl["TPMS11"]['PRESSURE_RL'] * 5 * 0.145
     else:
       ret.tpmsPressureRl = cp.vl["TPMS11"]['PRESSURE_RL']
-    if cp.vl["TPMS11"]['PRESSURE_RR'] > 43:
+    if cp.vl["TPMS11"]['PRESSURE_RR'] > 46:
       ret.tpmsPressureRr = cp.vl["TPMS11"]['PRESSURE_RR'] * 5 * 0.145
     else:
       ret.tpmsPressureRr = cp.vl["TPMS11"]['PRESSURE_RR']
